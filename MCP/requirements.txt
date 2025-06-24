@@ -2,3 +2,4 @@ arxiv
 python-dotenv
 openai
 notebook
+mcp
