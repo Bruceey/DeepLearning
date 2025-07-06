@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 papers/
 node_modules/
+images/
 
 # C extensions
 *.so
