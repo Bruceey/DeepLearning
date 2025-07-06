@@ -36,16 +36,13 @@ async function start(url) {
 
 
 //根据图片链接下载图片
-async function downloadImage(url, headers) {
-  headers.host = (new URL(url)).host;
+async function downloadImage(url, options) {
 
-  const response = await fetch(url, headers);
+  const response = await fetch(url, options);
   if (!response.ok) {
     console.log(`❌ 下载失败: ${url}`);
     console.log(`❌ 响应状态码: ${response.status}`)
-    console.log(`❌ 响应状态信息: ${await response.statusText}`)
-    console.log(`❌ 响应头: ${JSON.stringify(headers)}`)
-    return;
+    console.log(`❌ 响应状态信息: ${response.statusText}`)
   }
   const buffer = await response.arrayBuffer();
   await writeFile(`images/${url.split('/').pop()}`, Buffer.from(buffer));
@@ -63,16 +60,16 @@ async function getMorePages(ajaxurl, form) {
   });
   if (!response.ok) {
     console.log(`❌ 请求失败: ${ajaxurl}`);
-    return;
+    console.log(`❌ 响应状态码: ${response.status}`)
+    console.log(`❌ 响应状态信息: ${response.statusText}`)
   }
   const json = await response.json();
   const html = json.data.content;
   // 获取图片链接
   const srcList = getImageSrcs(html);
-  // let referer = (new URL(srcList[0])).origin.replace('img', 'www');
-  let referer = 'https://www.mntuce01.com/'
+  let referer = (new URL(srcList[0])).origin.replace('img', 'www');
   for (let src of srcList) {
-    await downloadImage(src, {referer});
+    await downloadImage(src, {headers: {referer}});
   }
 
   // 继续下一页
@@ -88,17 +85,14 @@ async function getMorePages(ajaxurl, form) {
 async function main() {
   const startUrl = 'https://www.mntuce01.com/19357/.html';
   setProxy();
-  console.log(await (await fetch('https://www.google.com')).text())
-  return;
   const {srcList, ajaxurl, form} = await start(startUrl);
 
-  // let referer = (new URL(srcList[0])).origin.replace('img', 'www');
-  let referer = 'https://www.mntuce01.com/'
+  let referer = (new URL(srcList[0])).origin.replace('img', 'www');
+  const options = {headers: {referer}};
   for (let src of srcList) {
-    await downloadImage(src, {referer});
-    break
+    await downloadImage(src, options);
   }
-  return;
+
   // 获取更多页
   await getMorePages(ajaxurl, form);
 }
